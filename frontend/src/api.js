@@ -1,34 +1,45 @@
+const authHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const readResponse = async (response) => {
+  const contentType = response.headers.get("content-type") || "";
+  const result = contentType.includes("application/json")
+    ? await response.json()
+    : { message: await response.text() };
+
+  if (!response.ok || (typeof result.code === "number" && result.code >= 400)) {
+    throw new Error(result.message || `请求失败（${response.status}）`);
+  }
+  return result.data;
+};
+
 const upload = async (path, files, fieldName = "files") => {
   const data = new FormData();
   const list = Array.isArray(files) ? files : [files];
   list.forEach((file) => data.append(fieldName, file));
-  const token = localStorage.getItem("token");
   const response = await fetch(`/api${path}`, {
     method: "POST",
     credentials: "include",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: authHeaders(),
     body: data,
   });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok || result.code >= 400) throw new Error(result.message || "上传失败");
-  return result.data;
+  return readResponse(response);
 };
 
 const request = async (path, options = {}) => {
-  const token = localStorage.getItem("token");
+  const { headers = {}, ...requestOptions } = options;
   const response = await fetch(`/api${path}`, {
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
+      ...(requestOptions.body ? { "Content-Type": "application/json" } : {}),
+      ...authHeaders(),
+      ...headers,
     },
-    ...options,
+    ...requestOptions,
   });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok || result.code >= 400)
-    throw new Error(result.message || "请求失败");
-  return result.data;
+  return readResponse(response);
 };
 
 export const api = {
@@ -70,11 +81,21 @@ export const api = {
     request("/announcements/update", { method: "PUT", body: JSON.stringify(data) }),
   deleteAnnouncement: (id) => request(`/announcements/delete/${id}`, { method: "DELETE" }),
   uploadAvatar: (file) => upload("/user/avatar", file, "file"),
-  // chat: (question) =>
-  //   request("/chat", { method: "POST", body: JSON.stringify({ question }) }),
-  chat: (question) =>
-    request("/chat/stream", { method: "POST", body: JSON.stringify({ question }) }),
-
-
+  createChatSession: (data = {}) =>
+    request("/chat/sessions", { method: "POST", body: JSON.stringify(data) }),
+  listChatSessions: () => request("/chat/sessions"),
+  listChatMessages: (sessionId) =>
+    request(`/chat/sessions/${sessionId}/messages`),
+  streamChat: (question, sessionId) =>
+    fetch("/api/chat/stream", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Accept: "text/event-stream",
+        "Content-Type": "text/plain;charset=UTF-8",
+        ...authHeaders(),
+        ...(sessionId ? { "X-Chat-Session-Id": sessionId } : {}),
+      },
+      body: question,
+    }),
 };
-
