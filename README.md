@@ -286,6 +286,16 @@ X-Chat-Session-Id: 123
 
 新建数据库时执行 `compus-lost-find-main/src/sql/init_mysql.sql`；已有数据库升级时，在项目根目录执行 `mysql -u root -p < compus-lost-find-main/src/sql/upgrade_chat_history.sql`，创建会话和消息表。
 
+### 前端运行与功能
+
+前端入口位于 `frontend/src/main.js`，页面使用 Vue 3 `<script setup>` 单文件组件组织，接口集中封装在 `frontend/src/api.js`。在项目根目录启动前端开发服务：
+
+```powershell
+npm run dev --prefix frontend
+```
+
+开发服务器默认运行于 `http://localhost:5173`，`/api` 请求代理到 `http://localhost:8081`。前端使用后端 HttpOnly Cookie 完成登录态认证，不将 JWT 写入浏览器本地存储。当前页面支持物品检索与分类/状态筛选、发布/编辑/删除和图片管理、评论、个人资料/密码/头像、管理员公告管理，以及智能客服会话历史和 SSE 流式对话。接口字段和权限见[接口文档](./接口文档.md)。
+
 ---
 
 ## 七、常见问题
