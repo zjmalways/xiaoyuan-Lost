@@ -36,10 +36,16 @@ function search() {
   loadItems()
 }
 
+function changePage(currentPage) {
+  page.value = currentPage
+  loadItems()
+}
+
 onMounted(loadItems)
 </script>
 
 <template>
+  <div>
   <section class="hero-panel">
     <div class="hero-copy">
       <span class="eyebrow">CAMPUS LOST & FOUND</span>
@@ -93,7 +99,8 @@ onMounted(loadItems)
     </div>
     <el-empty v-if="!loading && !records.length" description="暂时没有找到相关信息，换个关键词试试吧" />
     <div v-if="total > pageSize" class="pagination-wrap">
-      <el-pagination v-model:current-page="page" :page-size="pageSize" :total="total" layout="prev, pager, next" @current-change="loadItems" />
+      <el-pagination :current-page="page" :page-size="pageSize" :total="total" layout="prev, pager, next" @current-change="changePage" />
     </div>
   </section>
+  </div>
 </template>
