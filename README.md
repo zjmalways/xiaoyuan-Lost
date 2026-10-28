@@ -288,10 +288,10 @@ X-Chat-Session-Id: 123
 
 ### 前端运行与功能
 
-前端入口位于 `frontend/src/main.js`，页面使用 Vue 3 `<script setup>` 单文件组件组织，接口集中封装在 `frontend/src/api.js`。在项目根目录启动前端开发服务：
+前端入口位于 `front/src/main.js`，页面使用 Vue 3 `<script setup>` 单文件组件组织，接口按用户、物品、社区和客服模块封装在 `front/src/api/`。在项目根目录启动前端开发服务：
 
 ```powershell
-npm run dev --prefix frontend
+npm run dev --prefix front
 ```
 
 开发服务器默认运行于 `http://localhost:5173`，`/api` 请求代理到 `http://localhost:8081`。前端使用后端 HttpOnly Cookie 完成登录态认证，不将 JWT 写入浏览器本地存储。当前页面支持物品检索与分类/状态筛选、发布/编辑/删除和图片管理、评论、个人资料/密码/头像、管理员公告管理，以及智能客服会话历史和 SSE 流式对话。接口字段和权限见[接口文档](./接口文档.md)。
